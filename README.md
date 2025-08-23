@@ -1,6 +1,6 @@
 # Kortowo Ninja 🥷
 
-Student exchange platform for dormitory residents at University of Warmia and Mazury (UWM). Access -> kortowo.ninja
+Student exchange platform for dormitory residents at University of Warmia and Mazury (UWM). 
 ## Features
 
 - Create exchange offers
