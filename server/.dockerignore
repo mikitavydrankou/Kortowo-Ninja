@@ -6,3 +6,12 @@ npm-debug.log
 .env.test.local
 .env.production.local
 logs
+*.md
+.gitignore
+.eslintrc*
+.prettierrc*
+coverage/
+.nyc_output/
+Dockerfile
+.dockerignore
+ecosystem.config.js

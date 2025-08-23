@@ -18,31 +18,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9000:3000"
-    depends_on:
-      - mysql
     networks:
       - diploma-network
     restart: unless-stopped
-
-  mysql:
-    env_file: ".env.local"
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - diploma-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-
-volumes:
-  mysql_data:
 
 networks:
   diploma-network:

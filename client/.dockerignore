@@ -5,3 +5,9 @@ dist
 .env.development.local
 .env.test.local
 .env.production.local
+*.md
+.gitignore
+.eslintrc*
+.prettierrc*
+coverage/
+.nyc_output/
