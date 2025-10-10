@@ -6,12 +6,21 @@ import authRoutes from "./app/routes/auth.routes.js";
 import userRoutes from "./app/routes/user.routes.js";
 import offerRoutes from "./app/routes/offer.routes.js";
 import qrRoutes from "./app/routes/qr.routes.js";
+import dotenv from "dotenv";
+dotenv.config();
+
+import { validateEnv } from "./app/config/validateEnv.js";
+validateEnv();
+
+import { errorHandler } from "./app/middleware/errorHandler.js";
+dotenv.config();
+
 
 const app = express();
 const port = process.env.API_PORT;
 
 const corsOptions = {
-    origin: `${process.env.CLIENT}`,
+    origin: process.env.CLIENT_URL,
     credentials: true,
 };
 
@@ -31,8 +40,14 @@ userRoutes(app);
 offerRoutes(app);
 qrRoutes(app);
 
+app.use(errorHandler);
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
 
-app.use(express.static("public"));
+// Unhandled rejections
+process.on("unhandledRejection", (err) => {
+    logger.error("Unhandled Rejection:", { error: err.message, stack: err.stack });
+    process.exit(1);
+});
