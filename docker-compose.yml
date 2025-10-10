@@ -1,26 +1,75 @@
 services:
+  db:
+    image: mysql:8.0
+    container_name: kortowo-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: main
+      MYSQL_USER: express
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-expresspwd}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - diploma-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "express", "-p${MYSQL_PASSWORD:-expresspwd}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 60s  
+
+  backend:
+    container_name: kortowo-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_USER=express
+      - DB_PASSWORD=${MYSQL_PASSWORD:-expresspwd}
+      - DB_NAME=main
+      - DB_DIALECT=mysql
+      - DB_PORT=3306
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production}
+      - API_PORT=3000
+      - CLIENT_URL=http://localhost:3000
+      - LOG_LEVEL=info
+    ports:
+      - "9000:3000"
+    volumes:
+      - ./server/logs:/app/logs
+    networks:
+      - diploma-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/count"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s  
+
   frontend:
-    env_file: ".env.local"  
+    container_name: kortowo-frontend
     build:
       context: ./client
       dockerfile: Dockerfile
     ports:
-      - "3000:80"  
+      - "3000:80"
     depends_on:
-      - backend
-    networks:
-      - diploma-network
-
-  backend:
-    env_file: ".env.local"  
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    ports:
-      - "9000:3000"
+      backend:
+        condition: service_healthy
     networks:
       - diploma-network
     restart: unless-stopped
+
+volumes:
+  db_data:
+    driver: local
 
 networks:
   diploma-network:
