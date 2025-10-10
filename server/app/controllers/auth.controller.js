@@ -1,159 +1,113 @@
-import db from "../models/index.js";
-import config from "../config/auth.config.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import db from "../models/index.js";
+import config from "../config/auth.config.js";
 import logger from "../config/logger.js";
+import { COOKIE_SETTINGS, ROLES } from "../constants/index.js";
+import { ValidationError, NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-const User = db.User;
-const Role = db.Role;
-const Op = db.Sequelize.Op;
-
-// user role = 1
-// admin role = 2
-// moderator role = 3
-
-const COOKIE_SETTINGS = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 86400 * 1000,
-};
+const { User, Role } = db;
 
 const validatePasswordStrength = (password) => {
     if (!password) {
-        return "Hasło nie może być puste";
+        throw new ValidationError("Hasło nie może być puste");
     }
 
     if (password.length < 8) {
-        return "Hasło musi mieć co najmniej 8 znaków";
+        throw new ValidationError("Hasło musi mieć co najmniej 8 znaków");
     }
 
-    const strongPasswordPattern = /^(?=.*[a-z])(?=.*\d).+$/;
+    const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
 
     if (!strongPasswordPattern.test(password)) {
-        return "Hasło musi zawierać co najmniej jedną cyfrę i jedną małą literę";
+        throw new ValidationError(
+            "Hasło musi zawierać co najmniej jedną małą i wielką literę, cyfrę oraz znak specjalny"
+        );
     }
-
-    return null;
 };
 
-export const signup = async (req, res) => {
-    try {
-        const passwordError = validatePasswordStrength(req.body.password);
-        if (passwordError) {
-            return res.status(400).json({
-                message: passwordError,
-            });
-        }
+export const signup = asyncHandler(async (req, res) => {
+    const { username, password, link } = req.body;
 
-        const role = await Role.findOne({ where: { name: "user" } });
-        if (!role) {
-            return res
-                .status(500)
-                .json({ message: "Nie znaleziono roli 'user'" });
-        }
+    validatePasswordStrength(password);
 
-        const user = await User.create({
-            username: req.body.username,
-            password: await bcrypt.hash(req.body.password, 8),
-            roleId: role.id,
-            link: req.body.link,
-        });
+    const role = await Role.findOne({ where: { name: ROLES.USER } });
+    if (!role) {
+        throw new Error("Nie znaleziono roli 'user'");
+    }
 
-        const token = jwt.sign({ id: user.id }, config.secret, {
+    const hashedPassword = await bcrypt.hash(password, 8);
+
+    const user = await User.create({
+        username,
+        password: hashedPassword,
+        roleId: role.id,
+        link,
+    });
+
+    const token = jwt.sign({ id: user.id, role: role.name }, config.secret, {
+        algorithm: "HS256",
+        expiresIn: 86400,
+    });
+
+    res.cookie("token", token, COOKIE_SETTINGS);
+
+    logger.info(`User ${user.username} signed up successfully`);
+
+    res.status(200).json({
+        message: "Użytkownik zarejestrował się pomyślnie!",
+        id: user.id,
+        username: user.username,
+        role: role.name,
+        link: user.link,
+    });
+});
+
+export const signin = asyncHandler(async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        throw new ValidationError("Wymagana jest nazwa użytkownika i hasło");
+    }
+
+    const user = await User.findOne({
+        where: { username },
+        include: Role,
+    });
+
+    if (!user) {
+        throw new NotFoundError("Użytkownik");
+    }
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordValid) {
+        throw new UnauthorizedError("Nieprawidłowe dane");
+    }
+
+    const token = jwt.sign(
+        { id: user.id, role: user.role.name },
+        config.secret,
+        {
             algorithm: "HS256",
             expiresIn: 86400,
-        });
-
-        res.cookie("token", token, COOKIE_SETTINGS);
-        res.status(200).json({
-            message: "Użytkownik zarejestrował się pomyślnie!",
-            id: user.id,
-            username: user.username,
-            role: role.name,
-            link: user.link,
-        });
-        logger.info(`User ${user.username} signup successfully`);
-    } catch (err) {
-        if (
-            err instanceof db.Sequelize.ValidationError ||
-            err instanceof db.Sequelize.UniqueConstraintError
-        ) {
-            return res.status(400).json({ message: err.message });
         }
-        res.status(500).json({
-            message:
-                "Rejestracja nie powiodła się z powodu wewnętrznego błędu serwera",
-        });
-        logger.error(`Signup error: ${err.stack}`);
-    }
-};
+    );
 
-export const signin = async (req, res) => {
-    try {
-        if (!req.body.username || !req.body.password) {
-            return res.status(400).json({
-                message: "Wymagana jest nazwa użytkownika i hasło",
-            });
-        }
+    res.cookie("token", token, COOKIE_SETTINGS);
 
-        const user = await User.findOne({
-            where: { username: req.body.username },
-            include: Role,
-        });
+    logger.info(`User ${user.username} signed in successfully`);
 
-        if (!user) {
-            return res
-                .status(404)
-                .json({ message: "Użytkownik nie został znaleziony" });
-        }
+    res.status(200).json({
+        id: user.id,
+        username: user.username,
+        role: user.role?.name,
+        link: user.link,
+    });
+});
 
-        const passwordValid = bcrypt.compareSync(
-            req.body.password,
-            user.password
-        );
-
-        if (!passwordValid) {
-            return res.status(401).json({
-                message: "Nieprawidłowe dane",
-            });
-        }
-
-        const token = jwt.sign(
-            { id: user.id, role: user.role.name },
-            config.secret,
-            {
-                algorithm: "HS256",
-                expiresIn: 86400,
-            }
-        );
-
-        res.cookie("token", token, COOKIE_SETTINGS);
-
-        const responseData = {
-            id: user.id,
-            username: user.username,
-            role: user.role?.name,
-            link: user.link,
-        };
-
-        logger.info(`User ${user.username} signin successfully`);
-        res.status(200).json(responseData);
-    } catch (err) {
-        if (
-            err instanceof db.Sequelize.ValidationError ||
-            err instanceof db.Sequelize.UniqueConstraintError
-        ) {
-            return res.status(400).json({ message: err.message });
-        }
-        res.status(500).json({
-            message:
-                "Rejestracja nie powiodła się z powodu wewnętrznego błędu serwera",
-        });
-        logger.error(`Signin error: ${err.stack}`);
-    }
-};
 export const signout = (req, res) => {
     res.clearCookie("token");
-    res.status(200).send({ message: "Wyloguj się pomyślnie" });
+    res.status(200).json({ message: "Wyloguj się pomyślnie" });
 };

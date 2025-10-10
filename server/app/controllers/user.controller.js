@@ -1,18 +1,6 @@
 import db from "../models/index.js";
 const Offer = db.Offer;
 
-/* 
-    - leaderboard: get top 3 users with most offers in the last 20 days
-
-    - getUserOffers: get all offers for a user (for admin, moderator and the user itself)
-    - getUserById: get user by id (for admin, moderator and the user itself)
-    - users: all users (for admin and moderator)
-    
-    - ! updateUserRole: update user role (for admin and moderator)
-    
-    - updateUser: update user (for admin, moderator and the user itself)
-    - deleteUser: delete user (for admin and moderator)
-*/
 const USER_INCLUDE_SETTINGS = {
     model: db.User,
     attributes: ["id", "username", "link"],
