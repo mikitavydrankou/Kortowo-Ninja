@@ -1,25 +1,24 @@
 import jwt from "jsonwebtoken";
 import config from "../config/auth.config.js";
 import db from "../models/index.js";
-const User = db.User;
-const Role = db.Role;
+import { ROLE_HIERARCHY } from "../constants/index.js";
+import { UnauthorizedError, ForbiddenError, NotFoundError } from "../utils/errors.js";
 
-const verifyToken = (req, res, next) => {
-    let token = req.cookies.token;
+const { User, Role } = db;
 
-    if (!token) {
-        return res.status(403).send({ message: "No token provided!" });
-    }
+const verifyToken = async (req, res, next) => {
+    try {
+        const token = req.cookies.token;
 
-    jwt.verify(token, config.secret, async (err, decoded) => {
-        if (err) {
-            return res.status(401).send({ message: "Unauthorized!" });
+        if (!token) {
+            throw new ForbiddenError("No token provided!");
         }
 
+        const decoded = jwt.verify(token, config.secret);
         const user = await User.findByPk(decoded.id);
 
         if (!user) {
-            return res.status(404).send({ message: "User not found!" });
+            throw new NotFoundError("User");
         }
 
         req.user = {
@@ -30,7 +29,13 @@ const verifyToken = (req, res, next) => {
         };
 
         next();
-    });
+    } catch (error) {
+        if (error.name === "JsonWebTokenError") {
+            next(new UnauthorizedError("Invalid token"));
+        } else {
+            next(error);
+        }
+    }
 };
 
 const optionalVerifyToken = async (req, res, next) => {
@@ -45,67 +50,50 @@ const optionalVerifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, config.secret);
         const user = await User.findByPk(decoded.id);
 
-        if (!user) {
-            req.user = null;
-            return next();
-        }
-
-        req.user = {
-            id: user.id,
-            username: user.username,
-            link: user.link,
-            role: decoded.role,
-        };
-        next();
+        req.user = user
+            ? {
+                  id: user.id,
+                  username: user.username,
+                  link: user.link,
+                  role: decoded.role,
+              }
+            : null;
     } catch (err) {
         req.user = null;
-        next();
     }
+
+    next();
 };
 
-const checkRole = (requiredRole) => {
-    const ROLE_HIERARCHY = {
-        user: 1,
-        moderator: 2,
-        admin: 3,
-    };
-
-    return (req, res, next) => {
-        User.findByPk(req.user.id, {
+const checkRole = (requiredRole) => async (req, res, next) => {
+    try {
+        const user = await User.findByPk(req.user.id, {
             include: [{ model: Role, as: "role" }],
-        })
-            .then((user) => {
-                if (!user) {
-                    return res.status(404).send({ message: "User not found!" });
-                }
+        });
 
-                if (!user.role) {
-                    return res
-                        .status(403)
-                        .send({ message: "Role is undefined!" });
-                }
+        if (!user) {
+            throw new NotFoundError("User");
+        }
 
-                const userRoleLevel = ROLE_HIERARCHY[user.role.name];
-                const requiredLevel = ROLE_HIERARCHY[requiredRole];
+        if (!user.role) {
+            throw new ForbiddenError("Role is undefined!");
+        }
 
-                if (!requiredLevel) {
-                    return res
-                        .status(500)
-                        .send({ message: "Invalid role check" });
-                }
+        const userRoleLevel = ROLE_HIERARCHY[user.role.name];
+        const requiredLevel = ROLE_HIERARCHY[requiredRole];
 
-                if (userRoleLevel >= requiredLevel) {
-                    next();
-                } else {
-                    res.status(403).send({
-                        message: `Requires ${requiredRole} role or higher!`,
-                    });
-                }
-            })
-            .catch((err) => {
-                res.status(500).send({ message: err.message });
-            });
-    };
+        if (!requiredLevel) {
+            throw new Error("Invalid role check");
+        }
+
+        if (userRoleLevel >= requiredLevel) {
+            next();
+        } else {
+            throw new ForbiddenError(`Requires ${requiredRole} role or higher!`);
+        }
+    } catch (error) {
+        next(error);
+    }
 };
 
 const authJwt = {
