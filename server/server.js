@@ -7,14 +7,10 @@ import userRoutes from "./app/routes/user.routes.js";
 import offerRoutes from "./app/routes/offer.routes.js";
 import qrRoutes from "./app/routes/qr.routes.js";
 import dotenv from "dotenv";
-dotenv.config();
-
 import { validateEnv } from "./app/config/validateEnv.js";
-validateEnv();
-
 import { errorHandler } from "./app/middleware/errorHandler.js";
 dotenv.config();
-
+validateEnv();
 
 const app = express();
 const port = process.env.API_PORT;
