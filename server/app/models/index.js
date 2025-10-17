@@ -10,6 +10,7 @@ import { ROLES, OFFER_STATUS } from "../constants/index.js";
 
 const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
     host: config.HOST,
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
     dialect: config.dialect,
     logging: false,
     pool: {
@@ -20,13 +21,24 @@ const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
     },
 });
 
-try {
-    await sequelize.authenticate();
-    logger.info("Database connection established successfully");
-} catch (error) {
-    logger.error("Unable to connect to the database:", { error: error.message });
+const connectWithRetry = async (retries = 10, delayMs = 3000) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            await sequelize.authenticate();
+            logger.info("Database connection established successfully");
+            return;
+        } catch (error) {
+            logger.error(`Database connection attempt ${attempt} failed:`, { error: error.message });
+            if (attempt < retries) {
+                await new Promise((res) => setTimeout(res, delayMs));
+            }
+        }
+    }
+    logger.error("Could not connect to the database after multiple attempts");
     process.exit(1);
-}
+};
+
+await connectWithRetry();
 
 const db = {
     Sequelize,
