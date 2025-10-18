@@ -15,7 +15,7 @@ services:
       - diploma-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "express", "-p${DB_PASSWORD:-expresspwd}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u ${DB_USER} -p${DB_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 15
@@ -39,7 +39,7 @@ services:
       - CLIENT_URL=${CLIENT_URL}
       - LOG_LEVEL=${LOG_LEVEL}
     ports:
-      - "9000:3000"
+      - "${API_PORT}:3000"
     volumes:
       - ./server/logs:/app/logs
     networks:
@@ -49,7 +49,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/count"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:${API_PORT}/api/count"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -63,7 +63,7 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL}
     ports:
-      - "3000:80"
+      - "${VITE_API_PORT}:80"
     depends_on:
       backend:
         condition: service_healthy
