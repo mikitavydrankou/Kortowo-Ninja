@@ -1,0 +1,75 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: kortowo-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - diploma-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 60s  
+
+  backend:
+    container_name: kortowo-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_DIALECT=${DB_DIALECT}
+      - DB_PORT=${DB_PORT}
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-dev}
+      - API_PORT=${API_PORT}
+      - CLIENT_URL=${CLIENT_URL}
+      - LOG_LEVEL=debug
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "${API_PORT}:3000"
+    volumes:
+      - ./server:/app:cached
+      - /app/node_modules
+    networks:
+      - diploma-network
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: vite-frontend
+    ports:
+      - "${VITE_API_PORT}:5173"
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  diploma-network:
+    driver: bridge
