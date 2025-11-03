@@ -6,6 +6,7 @@ import logger from "../config/logger.js";
 import { COOKIE_SETTINGS, ROLES } from "../constants/index.js";
 import { ValidationError, NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { PASSWORD_REGEX } from "../constants/index.js";
 
 const { User, Role } = db;
 
@@ -18,9 +19,7 @@ const validatePasswordStrength = (password) => {
         throw new ValidationError("Hasło musi mieć co najmniej 8 znaków");
     }
 
-    const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/;
-
-    if (!strongPasswordPattern.test(password)) {
+    if (!PASSWORD_REGEX.test(password)) {
         throw new ValidationError(
             "Hasło musi zawierać co najmniej jedną małą i wielką literę, cyfrę oraz znak specjalny"
         );
