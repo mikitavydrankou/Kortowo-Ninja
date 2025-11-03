@@ -42,7 +42,6 @@ app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
 
-// Unhandled rejections
 process.on("unhandledRejection", (err) => {
     logger.error("Unhandled Rejection:", { error: err.message, stack: err.stack });
     process.exit(1);
