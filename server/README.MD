@@ -1,4 +1,4 @@
-Dev 
+Dev!
 
 1. Build it and run
 docker compose -f .\compose.dev.yml up --build
