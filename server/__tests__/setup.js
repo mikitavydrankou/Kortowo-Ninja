@@ -7,5 +7,3 @@ beforeEach(() => {
 afterEach(() => {
 	jest.resetAllMocks();
 });
-
-export { flushPromises } from './helpers/test-utils.js';
