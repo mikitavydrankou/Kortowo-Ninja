@@ -1,7 +1,10 @@
 export default {
   testEnvironment: 'node',
-  transform: {},
-  roots: ['<rootDir>'],
+  roots: ['<rootDir>/__tests__'],
   moduleFileExtensions: ['js'],
   testMatch: ['**/?(*.)+(test).js'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/setup.js'],
+  testEnvironmentOptions: {
+    'node-options': '--experimental-vm-modules'
+  }
 };

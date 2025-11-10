@@ -1,4 +1,5 @@
 import db from "../models/index.js";
+import logger from "../config/logger.js";
 const Offer = db.Offer;
 
 const USER_INCLUDE_SETTINGS = {
