@@ -40,7 +40,10 @@ cp .env.example .env
 nano .env
 ```
 
-3. docker compose -f compose.dev.yml up -d --build
+3. Build project
+```
+docker compose -f compose.dev.yml up -d --build
+```
 
 4. That's all! Go to localhost:5173
 
