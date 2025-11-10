@@ -30,8 +30,12 @@ export const PLACES = [
 
 export const COOKIE_SETTINGS = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    // In production with HTTPS set COOKIE_SECURE=true. Falls back to NODE_ENV check.
+    secure: process.env.COOKIE_SECURE === "true" ? true : process.env.NODE_ENV === "production",
+    // Use COOKIE_SAMESITE to override (e.g., "None" when cross-site and secure=true)
+    sameSite: process.env.COOKIE_SAMESITE || (process.env.NODE_ENV === "production" ? "None" : "Lax"),
+    // Optionally scope cookie to a domain (e.g., kortowo.ninja)
+    domain: process.env.COOKIE_DOMAIN || undefined,
     maxAge: 86400 * 1000, // 24 hours
 };
 
