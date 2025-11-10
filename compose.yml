@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   db:
     image: mysql:8.0
@@ -76,13 +74,13 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # HTTPS router
-      - "traefik.http.routers.kortowo.rule=Host(`kortowo.ninja`,`www.kortowo.ninja`)"
+      # HTTPS router for apex domain
+      - "traefik.http.routers.kortowo.rule=Host(`kortowo.ninja`)"
       - "traefik.http.routers.kortowo.entrypoints=websecure"
       - "traefik.http.routers.kortowo.tls.certresolver=myresolver"
       - "traefik.http.services.kortowo.loadbalancer.server.port=80"
-      # HTTP -> HTTPS redirect
-      - "traefik.http.routers.kortowo-http.rule=Host(`kortowo.ninja`,`www.kortowo.ninja`)"
+      # HTTP -> HTTPS redirect (apex only). Add www after DNS is ready.
+      - "traefik.http.routers.kortowo-http.rule=Host(`kortowo.ninja`)"
       - "traefik.http.routers.kortowo-http.entrypoints=web"
       - "traefik.http.routers.kortowo-http.middlewares=kortowo-redirecthttps"
       - "traefik.http.middlewares.kortowo-redirecthttps.redirectscheme.scheme=https"
