@@ -76,10 +76,16 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.kortowo.rule=Host(`kortowo.ninja`)"
+      # HTTPS router
+      - "traefik.http.routers.kortowo.rule=Host(`kortowo.ninja`,`www.kortowo.ninja`)"
       - "traefik.http.routers.kortowo.entrypoints=websecure"
       - "traefik.http.routers.kortowo.tls.certresolver=myresolver"
       - "traefik.http.services.kortowo.loadbalancer.server.port=80"
+      # HTTP -> HTTPS redirect
+      - "traefik.http.routers.kortowo-http.rule=Host(`kortowo.ninja`,`www.kortowo.ninja`)"
+      - "traefik.http.routers.kortowo-http.entrypoints=web"
+      - "traefik.http.routers.kortowo-http.middlewares=kortowo-redirecthttps"
+      - "traefik.http.middlewares.kortowo-redirecthttps.redirectscheme.scheme=https"
 
   traefik:
     image: traefik:v3.1
