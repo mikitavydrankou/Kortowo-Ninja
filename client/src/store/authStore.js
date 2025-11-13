@@ -47,10 +47,9 @@ export const useAuthStore = create(
                 } catch (error) {
                     console.error("Logout error:", error);
                 }
+                // Server clears the httpOnly cookie; remove client state and persisted storage.
                 set({ user: null, error: null });
                 localStorage.removeItem("auth-storage");
-                document.cookie =
-                    "token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT;";
             },
 
             checkAuth: async () => {

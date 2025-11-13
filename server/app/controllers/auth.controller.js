@@ -107,6 +107,7 @@ export const signin = asyncHandler(async (req, res) => {
 });
 
 export const signout = (req, res) => {
-    res.clearCookie("token");
+    // Clear the cookie using the same options it was set with so browsers accept the clear.
+    res.clearCookie("token", COOKIE_SETTINGS);
     res.status(200).json({ message: "Wyloguj się pomyślnie" });
 };

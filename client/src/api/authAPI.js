@@ -24,9 +24,10 @@ export const checkauth = async () => {
     }
 };
 
-export const signout = () => {
+export const signout = async () => {
     try {
-        api.post("/signout");
+        const res = await api.post("/signout");
+        return res;
     } catch (error) {
         return null;
     }

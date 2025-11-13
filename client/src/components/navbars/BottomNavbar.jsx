@@ -21,8 +21,8 @@ const BottomNavbar = () => {
     const { logout, user } = useAuthStore();
     const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
 
-    const handleLogout = () => {
-        logout();
+    const handleLogout = async () => {
+        await logout();
         navigate("/");
         setOpenLogoutDialog(false);
     };
