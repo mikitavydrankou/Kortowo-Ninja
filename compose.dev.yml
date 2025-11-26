@@ -21,6 +21,21 @@ services:
       retries: 15
       start_period: 60s  
 
+  adminer:
+    image: adminer:latest
+    container_name: kortowo-adminer
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+      - ADMINER_DESIGN=pepa-linha-dark
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - diploma-network
+    restart: unless-stopped
+
   backend:
     container_name: kortowo-backend
     build:
@@ -65,9 +80,64 @@ services:
       - ./client:/app
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
+    networks:
+      - diploma-network
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    networks:
+      - diploma-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3030:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    networks:
+      - diploma-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - diploma-network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - diploma-network
 
 volumes:
   db_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  portainer_data:
     driver: local
 
 networks:

@@ -19,6 +19,21 @@ services:
       retries: 15
       start_period: 60s
 
+  adminer:
+    image: adminer:latest
+    container_name: kortowo-adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: pepa-linha-dark
+    ports:
+      - "8081:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - diploma-network
+    restart: unless-stopped
+
   backend:
     container_name: kortowo-backend
     build:
@@ -60,7 +75,6 @@ services:
     container_name: kortowo-frontend
     build:
       context: ./client
-    # For production build, ensure VITE_API_URL resolves to /api (same-origin)
       dockerfile: Dockerfile
       args:
         VITE_API_URL: /api
@@ -74,12 +88,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      # HTTPS router for apex domain
       - "traefik.http.routers.kortowo.rule=Host(`kortowo.ninja`)"
       - "traefik.http.routers.kortowo.entrypoints=websecure"
       - "traefik.http.routers.kortowo.tls.certresolver=myresolver"
       - "traefik.http.services.kortowo.loadbalancer.server.port=80"
-      # Security headers on HTTPS responses
       - "traefik.http.middlewares.kortowo-headers.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.kortowo-headers.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.kortowo-headers.headers.stsPreload=true"
@@ -88,7 +100,6 @@ services:
       - "traefik.http.middlewares.kortowo-headers.headers.permissionsPolicy=geolocation=(),camera=(),microphone=()"
       - "traefik.http.middlewares.kortowo-headers.headers.frameDeny=true"
       - "traefik.http.routers.kortowo.middlewares=kortowo-headers"
-      # HTTP -> HTTPS redirect (apex only). Add www after DNS is ready.
       - "traefik.http.routers.kortowo-http.rule=Host(`kortowo.ninja`)"
       - "traefik.http.routers.kortowo-http.entrypoints=web"
       - "traefik.http.routers.kortowo-http.middlewares=kortowo-redirecthttps"
@@ -117,9 +128,63 @@ services:
       - diploma-network
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    networks:
+      - diploma-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3030:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - diploma-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - diploma-network
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - diploma-network
+
 volumes:
   db_data:
   letsencrypt:
+  prometheus_data:
+  grafana_data:
+  portainer_data:
 
 networks:
   diploma-network:
