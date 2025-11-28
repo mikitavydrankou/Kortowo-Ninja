@@ -32,12 +32,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run Unit Tests
         env:
           NODE_ENV: test
-          # Redundant with package script but ensures Jest ESM support in all shells
           NODE_OPTIONS: --experimental-vm-modules
-        run: npm test -- --verbose --ci
+        run: npm test -- __tests__/unit --verbose --ci
+
+      - name: Run Integration Tests
+        env:
+          NODE_ENV: test
+          NODE_OPTIONS: --experimental-vm-modules
+        run: npm test -- __tests__/integration --verbose --ci --runInBand --forceExit
 
       - name: Upload test summary
         if: success() || failure()
