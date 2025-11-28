@@ -18,27 +18,27 @@ const roleModel = (sequelize, Sequelize) => {
             },
         },
         {
-            timestamps: false, 
+            timestamps: false,
             hooks: {
                 afterSync: async (options) => {
                     try {
                         const count = await Role.count();
                         console.log(`Current roles count: ${count}`);
-                        
+
                         if (count === 0) {
                             console.log('Creating initial roles...');
-                            
+
                             const roles = [
                                 { id: 1, name: "user", description: "Regular user" },
                                 { id: 2, name: "admin", description: "Administrator" },
                                 { id: 3, name: "moderator", description: "Content moderator" },
                             ];
 
-                            await Role.bulkCreate(roles, { 
+                            await Role.bulkCreate(roles, {
                                 validate: true,
                                 ignoreDuplicates: true
                             });
-                            
+
                             console.log("Initial roles created successfully");
                         } else {
                             console.log("Roles already exist, skipping creation");
