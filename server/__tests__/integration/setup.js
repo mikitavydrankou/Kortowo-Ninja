@@ -50,7 +50,7 @@ export const startContainer = async () => {
 
     if (!connected) {
         await container.stop();
-        throw new Error('Failed to connect to MySQL container after 60 seconds');
+        throw new Error('Failed to connect to MySQL container after 60 seconds!');
     }
 
     return container;
