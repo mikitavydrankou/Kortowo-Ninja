@@ -39,7 +39,7 @@ describe('Offer Integration', () => {
                 ttlHours: 24,
                 place: 'DS1'
             },
-            user: { id: user.id }
+            user: { id: user.id, username: user.username }
         });
         const res = createMockResponse();
         const next = jest.fn();
