@@ -7,9 +7,9 @@ test.describe('Full User Journey', () => {
   test.describe.configure({ mode: 'serial' });
 
   test('1. register new user', async ({ page }) => {
-    await clearAuth(page);
     await page.goto('/#/signup');
     await waitForApp(page);
+    await clearAuth(page);
     
     await page.getByLabel('Nickname').fill(user.username);
     await page.getByLabel(/Link do strony profilu/i).fill(user.link);
@@ -95,6 +95,8 @@ test.describe('Full User Journey', () => {
   });
 
   test('6. unauthenticated cannot access create', async ({ page }) => {
+    await page.goto('/#/');
+    await waitForApp(page);
     await clearAuth(page);
     await page.goto('/#/offer/create');
     await waitForApp(page);
