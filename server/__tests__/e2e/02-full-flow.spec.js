@@ -92,7 +92,8 @@ test.describe('Full User Journey', () => {
         await confirmBtn.click();
       }
     }
-    await expect(page).toHaveURL(/signin/);
+    await expect(page).toHaveURL(/#\//);
+    await expect(page.getByRole('link', { name: /Zaloguj/i })).toBeVisible();
   });
 
   test('6. unauthenticated cannot access create', async ({ page }) => {
