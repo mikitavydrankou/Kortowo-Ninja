@@ -56,7 +56,7 @@ test.describe('Full User Journey', () => {
     const placeSelect = page.locator('[role="combobox"]').first();
     await placeSelect.click({ force: true });
     await page.waitForTimeout(500);
-    await page.getByRole('option', { name: 'DS1' }).click();
+    await page.locator('[role="option"][data-value="DS1"]').click();
     
     await page.locator('input[name="title"]').fill(`E2E ${Date.now()}`);
     await page.locator('textarea[name="description"]').fill('E2E test');
