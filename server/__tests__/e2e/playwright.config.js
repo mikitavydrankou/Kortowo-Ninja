@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
+const apiPort = Number(process.env.API_PORT || 3000);
+const frontendPort = Number(process.env.E2E_FRONTEND_PORT || 5173);
+const baseURL = process.env.E2E_BASE_URL || `http://localhost:${frontendPort}`;
+
 export default defineConfig({
   testDir: './',
   timeout: 60000,
@@ -7,7 +11,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:5173',
+    baseURL,
     headless: true,
     screenshot: 'only-on-failure',
     video: 'off',
@@ -30,6 +34,20 @@ export default defineConfig({
           ],
         },
       },
+    },
+  ],
+  webServer: [
+    {
+      command: 'npm run start:ci',
+      port: apiPort,
+      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: `npm --prefix ../client run preview -- --host 0.0.0.0 --port ${frontendPort}`,
+      port: frontendPort,
+      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
     },
   ],
 });

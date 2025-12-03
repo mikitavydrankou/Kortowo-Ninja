@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "nodemon server.js",
         "start": "node server.js",
+        "start:ci": "node server.js",
         "test": "NODE_OPTIONS=--experimental-vm-modules jest",
         "test:e2e": "playwright test --config=__tests__/e2e/playwright.config.js __tests__/e2e",
         "test:e2e:ui": "playwright test --config=__tests__/e2e/playwright.config.js --ui __tests__/e2e",

@@ -15,9 +15,6 @@ validateEnv();
 const app = express();
 const port = process.env.API_PORT;
 
-// If server runs behind a reverse proxy (nginx) enable trust proxy so express
-// can correctly identify secure connections (X-Forwarded-Proto) and set
-// cookies accordingly when secure=true.
 app.set("trust proxy", 1);
 
 const corsOptions = {
