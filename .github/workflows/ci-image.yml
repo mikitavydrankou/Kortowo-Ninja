@@ -7,6 +7,10 @@ on:
     paths:
       - ci/**
       - .github/workflows/ci-image.yml
+  pull_request:
+    paths:
+      - ci/**
+      - .github/workflows/ci-image.yml
   workflow_dispatch:
 
 permissions:

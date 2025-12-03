@@ -3,13 +3,46 @@ name: Tests
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'server/**'
+      - 'client/**'
+      - '.github/workflows/server-tests.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'server/**'
+      - 'client/**'
+      - '.github/workflows/server-tests.yml'
   workflow_dispatch:
 
 jobs:
-  unit-tests:
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
+      workflow: ${{ steps.filter.outputs.workflow }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            server:
+              - 'server/**'
+            client:
+              - 'client/**'
+            workflow:
+              - '.github/workflows/server-tests.yml'
+
+  unit-tests:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.server == 'true' ||
+      needs.changes.outputs.workflow == 'true'
     defaults:
       run:
         working-directory: ./server
@@ -28,7 +61,12 @@ jobs:
         run: npm test -- __tests__/unit --verbose
 
   integration-tests:
+    needs: changes
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.server == 'true' ||
+      needs.changes.outputs.workflow == 'true'
     defaults:
       run:
         working-directory: ./server
@@ -47,8 +85,14 @@ jobs:
         run: npm test -- __tests__/integration --verbose --runInBand --forceExit
 
   e2e-tests:
+    needs: changes
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.server == 'true' ||
+      needs.changes.outputs.client == 'true' ||
+      needs.changes.outputs.workflow == 'true'
     container:
       image: ghcr.io/${{ github.repository_owner }}/kortowo-ci:latest
       options: --user 0:0
