@@ -49,21 +49,6 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: testpass
-          MYSQL_DATABASE: kortowo_test
-          MYSQL_USER: testuser
-          MYSQL_PASSWORD: testpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -u testuser -ptestpass"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
     steps:
       - uses: actions/checkout@v4
 
@@ -75,16 +60,50 @@ jobs:
             server/package-lock.json
             client/package-lock.json
 
+      - name: Cache npm registry
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('server/package-lock.json', 'client/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
       - name: Install server dependencies
-        run: cd server && npm ci
+        run: cd server && npm ci --prefer-offline
 
       - name: Install client dependencies
-        run: cd client && npm ci
+        run: cd client && npm ci --prefer-offline
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Cache client build
+        id: cache-client-dist
+        uses: actions/cache@v4
+        with:
+          path: client/dist
+          key: client-dist-${{ runner.os }}-${{ hashFiles('client/package-lock.json', 'client/vite.config.js', 'client/src/**', 'client/public/**') }}
 
       - name: Build client (preview bundle)
+        if: steps.cache-client-dist.outputs.cache-hit != 'true'
         run: |
           cd client
           VITE_API_URL=http://127.0.0.1:3000/api npm run build
+
+      - name: Install and configure MySQL
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+          sudo systemctl start mysql
+          sudo mysql -e "CREATE DATABASE IF NOT EXISTS kortowo_test;"
+          sudo mysql -e "CREATE USER IF NOT EXISTS 'testuser'@'%' IDENTIFIED BY 'testpass';"
+          sudo mysql -e "GRANT ALL PRIVILEGES ON kortowo_test.* TO 'testuser'@'%'; FLUSH PRIVILEGES;"
 
       - name: Install Playwright
         run: cd server && npx playwright install chromium --with-deps
