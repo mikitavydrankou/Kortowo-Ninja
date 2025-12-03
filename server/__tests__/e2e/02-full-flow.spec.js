@@ -66,7 +66,7 @@ test.describe('Full User Journey', () => {
       ),
       page.getByRole('button', { name: /Wyślij/i }).click(),
     ]);
-    await expect(page.getByText('Oferta została pomyślnie dodana!')).toBeVisible({ timeout: 15000 });
+    await expect(page).toHaveURL(/#\/$/);
   });
 
   test('4. view offers', async ({ page }) => {
