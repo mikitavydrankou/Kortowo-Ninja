@@ -1,4 +1,11 @@
 import { defineConfig } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, '../../..');
+const serverDir = path.join(repoRoot, 'server');
+const clientDir = path.join(repoRoot, 'client');
 
 const apiPort = Number(process.env.API_PORT || 3000);
 const frontendPort = Number(process.env.E2E_FRONTEND_PORT || 5173);
@@ -42,12 +49,14 @@ export default defineConfig({
       port: apiPort,
       timeout: 120000,
       reuseExistingServer: !process.env.CI,
+      cwd: serverDir,
     },
     {
-      command: `npm --prefix ../client run preview -- --host 0.0.0.0 --port ${frontendPort}`,
+      command: `npm run preview -- --host 0.0.0.0 --port ${frontendPort}`,
       port: frontendPort,
       timeout: 120000,
       reuseExistingServer: !process.env.CI,
+      cwd: clientDir,
     },
   ],
 });
