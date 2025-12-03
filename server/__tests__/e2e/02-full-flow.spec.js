@@ -17,9 +17,7 @@ test.describe('Full User Journey', () => {
     await page.locator('input[name="acceptedTerms"]').check();
     
     await page.getByRole('button', { name: /Załóż konto/i }).click();
-    await page.waitForTimeout(3000);
-    
-    expect(page.url()).not.toContain('signup');
+    await expect(page).not.toHaveURL(/signup/);
   });
 
   test('2. login with created account', async ({ page }) => {
@@ -29,9 +27,7 @@ test.describe('Full User Journey', () => {
     await page.getByLabel('Nickname').fill(user.username);
     await page.getByLabel(/Hasło/i).fill(user.password);
     await page.getByRole('button', { name: /Zaloguj/i }).click();
-    
-    await page.waitForTimeout(3000);
-    expect(page.url()).not.toContain('signin');
+    await expect(page).not.toHaveURL(/signin/);
   });
 
   test('3. create offer', async ({ page }) => {
@@ -40,7 +36,7 @@ test.describe('Full User Journey', () => {
     await page.getByLabel('Nickname').fill(user.username);
     await page.getByLabel(/Hasło/i).fill(user.password);
     await page.getByRole('button', { name: /Zaloguj/i }).click();
-    await page.waitForTimeout(2000);
+    await expect(page).not.toHaveURL(/signin/);
     
     await page.goto('/#/offer/create');
     await waitForApp(page);
@@ -55,16 +51,22 @@ test.describe('Full User Journey', () => {
     
     const placeSelect = page.locator('[role="combobox"]').first();
     await placeSelect.click({ force: true });
-    await page.waitForTimeout(500);
-    await page.locator('[role="option"][data-value="DS1"]').click();
+    const ds1Option = page.locator('[role="option"][data-value="DS1"]');
+    await ds1Option.waitFor({ state: 'visible' });
+    await ds1Option.click();
     
     await page.locator('input[name="title"]').fill(`E2E ${Date.now()}`);
     await page.locator('textarea[name="description"]').fill('E2E test');
     await page.locator('input[name="ttlHours"]').fill('24');
     await page.locator('input[name="counter_offer"]').fill('Test');
     
-    await page.getByRole('button', { name: /Wyślij/i }).click();
-    await page.waitForTimeout(3000);
+    await Promise.all([
+      page.waitForResponse((response) =>
+        response.url().includes('/api/offer') && response.request().method() === 'POST' && response.ok()
+      ),
+      page.getByRole('button', { name: /Wyślij/i }).click(),
+    ]);
+    await expect(page.getByText('Oferta została pomyślnie dodana!')).toBeVisible();
   });
 
   test('4. view offers', async ({ page }) => {
@@ -80,18 +82,17 @@ test.describe('Full User Journey', () => {
     await page.getByLabel('Nickname').fill(user.username);
     await page.getByLabel(/Hasło/i).fill(user.password);
     await page.getByRole('button', { name: /Zaloguj/i }).click();
-    await page.waitForTimeout(2000);
+    await expect(page).not.toHaveURL(/signin/);
     
     const logoutBtn = page.getByText('Wyloguj się');
     if (await logoutBtn.count() > 0) {
       await logoutBtn.click();
-      await page.waitForTimeout(500);
       const confirmBtn = page.getByRole('button', { name: 'Wyloguj' });
       if (await confirmBtn.count() > 0) {
         await confirmBtn.click();
       }
     }
-    await page.waitForTimeout(1000);
+    await expect(page).toHaveURL(/signin/);
   });
 
   test('6. unauthenticated cannot access create', async ({ page }) => {

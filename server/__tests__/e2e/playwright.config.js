@@ -15,7 +15,7 @@ export default defineConfig({
   testDir: './',
   timeout: 60000,
   retries: process.env.CI ? 1 : 0,
-  workers: 1,
+  workers: process.env.CI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
@@ -28,7 +28,24 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'ui-smoke',
+      testMatch: /01-ui\.spec\.js/,
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 1280, height: 720 },
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+          ],
+        },
+      },
+    },
+    {
+      name: 'full-flow',
+      testMatch: /02-full-flow\.spec\.js/,
       use: {
         browserName: 'chromium',
         viewport: { width: 1280, height: 720 },
