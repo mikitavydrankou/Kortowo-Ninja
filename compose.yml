@@ -51,13 +51,14 @@ services:
       API_PORT: 3000
       CLIENT_URL: https://kortowo.ninja
       LOG_LEVEL: ${LOG_LEVEL}
+      LOG_DIR: /var/log/kortowo/backend
       COOKIE_SECURE: ${COOKIE_SECURE}
       COOKIE_SAMESITE: ${COOKIE_SAMESITE}
       COOKIE_DOMAIN: kortowo.ninja
     expose:
       - "3000"
     volumes:
-      - ./server/logs:/app/logs
+      - ./data/backend-logs:/var/log/kortowo/backend
     networks:
       - diploma-network
     depends_on:

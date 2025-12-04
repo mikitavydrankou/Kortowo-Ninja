@@ -25,16 +25,25 @@ const connectWithRetry = async (retries = 10, delayMs = 3000) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             await sequelize.authenticate();
-            logger.info("Database connection established successfully");
+            logger.info("Database connection established successfully", {
+                event: "db.connection.success",
+            });
             return;
         } catch (error) {
-            logger.error(`Database connection attempt ${attempt} failed:`, { error: error.message });
+            logger.error(`Database connection attempt ${attempt} failed`, {
+                event: "db.connection.retry",
+                attempt,
+                error: error.message,
+            });
             if (attempt < retries) {
                 await new Promise((res) => setTimeout(res, delayMs));
             }
         }
     }
-    logger.error("Could not connect to the database after multiple attempts");
+    logger.error("Could not connect to the database after multiple attempts", {
+        event: "db.connection.failed",
+        retries,
+    });
     process.exit(1);
 };
 
@@ -79,10 +88,16 @@ schedule.scheduleJob("*/5 * * * *", async () => {
             }
         );
         if (result[0] > 0) {
-            logger.info(`Archived ${result[0]} expired offers`);
+            logger.info(`Archived ${result[0]} expired offers`, {
+                event: "offer.archive.cron",
+                archivedCount: result[0],
+            });
         }
     } catch (error) {
-        logger.error("Error archiving offers:", { error: error.message });
+        logger.error("Error archiving offers", {
+            event: "offer.archive.cron.error",
+            error: error.message,
+        });
     }
 });
 

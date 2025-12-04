@@ -53,11 +53,13 @@ services:
       - API_PORT=${API_PORT}
       - CLIENT_URL=${CLIENT_URL}
       - LOG_LEVEL=debug
+      - LOG_DIR=/var/log/kortowo/backend
       - CHOKIDAR_USEPOLLING=true
     ports:
       - "${API_PORT}:3000"
     volumes:
       - ./server:/app:cached
+      - ./data/backend-logs:/var/log/kortowo/backend
       - /app/node_modules
     networks:
       - diploma-network
@@ -80,6 +82,33 @@ services:
       - ./client:/app
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
+    networks:
+      - diploma-network
+
+  loki:
+    image: grafana/loki:3.1.1
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/loki-config.yml
+      - loki_data:/loki
+    networks:
+      - diploma-network
+
+  promtail:
+    image: grafana/promtail:3.1.1
+    container_name: promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+      - ./data/backend-logs:/var/log/kortowo/backend:ro
+      - promtail_positions:/tmp
+    depends_on:
+      - loki
     networks:
       - diploma-network
 
@@ -108,6 +137,12 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    depends_on:
+      - loki
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
+      - grafana_data:/var/lib/grafana
     networks:
       - diploma-network
 
@@ -138,6 +173,12 @@ volumes:
   prometheus_data:
     driver: local
   portainer_data:
+    driver: local
+  loki_data:
+    driver: local
+  promtail_positions:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

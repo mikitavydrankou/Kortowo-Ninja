@@ -7,6 +7,7 @@ import { COOKIE_SETTINGS, ROLES } from "../constants/index.js";
 import { ValidationError, NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { PASSWORD_REGEX } from "../constants/index.js";
+import { buildLogContext } from "../utils/logContext.js";
 
 const { User, Role } = db;
 
@@ -52,7 +53,14 @@ export const signup = asyncHandler(async (req, res) => {
 
     res.cookie("token", token, COOKIE_SETTINGS);
 
-    logger.info(`User ${user.username} signed up successfully`);
+    logger.info(
+        `User ${user.username} signed up successfully`,
+        buildLogContext(req, {
+            event: "auth.signup.success",
+            userId: user.id,
+            username: user.username,
+        })
+    );
 
     res.status(200).json({
         message: "Użytkownik zarejestrował się pomyślnie!",
@@ -96,7 +104,14 @@ export const signin = asyncHandler(async (req, res) => {
 
     res.cookie("token", token, COOKIE_SETTINGS);
 
-    logger.info(`User ${user.username} signed in successfully`);
+    logger.info(
+        `User ${user.username} signed in successfully`,
+        buildLogContext(req, {
+            event: "auth.signin.success",
+            userId: user.id,
+            username: user.username,
+        })
+    );
 
     res.status(200).json({
         id: user.id,

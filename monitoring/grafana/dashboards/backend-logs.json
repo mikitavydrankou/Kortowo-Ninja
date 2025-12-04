@@ -1,0 +1,168 @@
+{
+  "id": null,
+  "uid": "backend-logs",
+  "title": "Backend Winston Logs",
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 0,
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "version": 2,
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "custom",
+        "query": "kortowo-backend",
+        "multi": false,
+        "includeAll": false,
+        "options": [
+          {
+            "text": "kortowo-backend",
+            "value": "kortowo-backend",
+            "selected": true
+          }
+        ],
+        "current": {
+          "selected": true,
+          "text": "kortowo-backend",
+          "value": "kortowo-backend"
+        }
+      },
+      {
+        "name": "event",
+        "label": "Event regex",
+        "type": "textbox",
+        "query": ".+",
+        "skipUrlSync": false,
+        "current": {
+          "selected": true,
+          "text": ".+",
+          "value": ".+"
+        },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Live backend logs",
+      "id": 1,
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{service=\"$service\",event=~\"$event\"}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Events per 5 minutes",
+      "id": 2,
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "barWidthFactor": 0.85,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "showValues": false,
+            "pointSize": 4,
+            "stacking": { "mode": "none", "group": "events" },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "axisCenteredZero": false,
+            "thresholdsStyle": { "mode": "off" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["last"]
+        },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "sum by (event) (count_over_time({service=\"$service\",event=~\"$event\"}[$__interval]))",
+          "interval": "5m"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP errors by status (5m)",
+      "id": 3,
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 22 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "barAlignment": 0,
+            "barWidthFactor": 0.85,
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "none",
+            "spanNulls": false,
+            "insertNulls": false,
+            "showPoints": "never",
+            "showValues": false,
+            "pointSize": 4,
+            "stacking": { "mode": "none", "group": "status" },
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "axisCenteredZero": false,
+            "thresholdsStyle": { "mode": "off" }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": ["last"]
+        },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "sum by (statusCode) (count_over_time({service=\"$service\",statusCode!=\"\"}[$__interval]))",
+          "interval": "5m"
+        }
+      ]
+    }
+  ]
+}

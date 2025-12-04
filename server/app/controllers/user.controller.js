@@ -1,5 +1,6 @@
 import db from "../models/index.js";
 import logger from "../config/logger.js";
+import { buildLogContext } from "../utils/logContext.js";
 const Offer = db.Offer;
 
 const USER_INCLUDE_SETTINGS = {
@@ -55,6 +56,13 @@ export const leaderboard = async (req, res) => {
 
         res.status(200).json({ success: true, data: topUsers });
     } catch (error) {
+        logger.error(
+            "Error fetching top users",
+            buildLogContext(req, {
+                event: "users.leaderboard.error",
+                error: error.message,
+            })
+        );
         res.status(500).json({
             success: false,
             message: "Error fetching top users",
@@ -80,7 +88,13 @@ export const users = async (req, res) => {
 
         res.status(200).json(users);
     } catch (err) {
-        console.error(err);
+        logger.error(
+            "Error while getting users",
+            buildLogContext(req, {
+                event: "users.list.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Error while getting users" });
     }
 };
@@ -109,7 +123,13 @@ export const getUserActiveOffers = async (req, res) => {
 
         res.status(200).json(offers);
     } catch (err) {
-        console.error("Error fetching user active offers:", err);
+        logger.error(
+            "Error fetching user active offers",
+            buildLogContext(req, {
+                event: "users.offers.active.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to get user active offers" });
     }
 };
@@ -137,7 +157,13 @@ export const getUserArchivedOffers = async (req, res) => {
 
         res.status(200).json(offers);
     } catch (err) {
-        console.error("Error fetching user archived offers:", err);
+        logger.error(
+            "Error fetching user archived offers",
+            buildLogContext(req, {
+                event: "users.offers.archived.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to get user archived offers" });
     }
 };
@@ -163,7 +189,13 @@ export const getUserById = async (req, res) => {
 
         res.status(200).json(user);
     } catch (err) {
-        console.error("Error fetching user:", err);
+        logger.error(
+            "Error fetching user",
+            buildLogContext(req, {
+                event: "users.detail.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to get user" });
     }
 };
@@ -182,7 +214,13 @@ export const deleteUser = async (req, res) => {
         await user.destroy();
         res.status(200).json({ message: "User deleted successfully" });
     } catch (err) {
-        console.error("Error deleting user:", err);
+        logger.error(
+            "Error deleting user",
+            buildLogContext(req, {
+                event: "users.delete.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to delete user" });
     }
 };
@@ -206,7 +244,13 @@ export const updateUser = async (req, res) => {
         await user.update({ username, link });
         res.status(200).json(user);
     } catch (err) {
-        console.error("Error updating profile:", err);
+        logger.error(
+            "Error updating profile",
+            buildLogContext(req, {
+                event: "users.update.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to update profile" });
     }
 };
@@ -229,7 +273,13 @@ export const updateUserRole = async (req, res) => {
         await user.update({ roleId: role.id });
         res.status(200).json({ message: "User role updated successfully" });
     } catch (err) {
-        console.error("Error updating role:", err);
+        logger.error(
+            "Error updating role",
+            buildLogContext(req, {
+                event: "users.role.update.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to update role" });
     }
 };
@@ -239,7 +289,13 @@ export const usersCount = async (req, res) => {
         const count = await db.User.count();
         res.status(200).json({ count });
     } catch (err) {
-        logger.error(`User count error: ${err.stack}`);
+        logger.error(
+            "User count error",
+            buildLogContext(req, {
+                event: "users.count.error",
+                error: err.message,
+            })
+        );
         res.status(500).json({ message: "Failed to get user count" });
     }
 };

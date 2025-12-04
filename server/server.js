@@ -9,6 +9,8 @@ import qrRoutes from "./app/routes/qr.routes.js";
 import dotenv from "dotenv";
 import { validateEnv } from "./app/config/validateEnv.js";
 import { errorHandler } from "./app/middleware/errorHandler.js";
+import logger from "./app/config/logger.js";
+import { attachRequestContext } from "./app/middleware/requestContext.js";
 dotenv.config();
 validateEnv();
 
@@ -26,6 +28,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(attachRequestContext);
 
 db.sequelize.sync();
 
@@ -41,10 +44,10 @@ qrRoutes(app);
 app.use(errorHandler);
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    logger.info(`Server running on port ${port}`, { event: "server.start", port });
 });
 
 process.on("unhandledRejection", (err) => {
-    logger.error("Unhandled Rejection:", { error: err.message, stack: err.stack });
+    logger.error("Unhandled Rejection", { event: "process.unhandledRejection", error: err.message });
     process.exit(1);
 });

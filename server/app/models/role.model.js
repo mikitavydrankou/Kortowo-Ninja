@@ -1,3 +1,5 @@
+import logger from "../config/logger.js";
+
 const roleModel = (sequelize, Sequelize) => {
     const Role = sequelize.define(
         "roles",
@@ -23,10 +25,15 @@ const roleModel = (sequelize, Sequelize) => {
                 afterSync: async (options) => {
                     try {
                         const count = await Role.count();
-                        console.log(`Current roles count: ${count}`);
+                        logger.info(`Current roles count: ${count}`, {
+                            event: "roles.seed.count",
+                            count,
+                        });
 
                         if (count === 0) {
-                            console.log('Creating initial roles...');
+                            logger.info("Creating initial roles", {
+                                event: "roles.seed.start",
+                            });
 
                             const roles = [
                                 { id: 1, name: "user", description: "Regular user" },
@@ -39,12 +46,19 @@ const roleModel = (sequelize, Sequelize) => {
                                 ignoreDuplicates: true
                             });
 
-                            console.log("Initial roles created successfully");
+                            logger.info("Initial roles created successfully", {
+                                event: "roles.seed.success",
+                            });
                         } else {
-                            console.log("Roles already exist, skipping creation");
+                            logger.info("Roles already exist, skipping creation", {
+                                event: "roles.seed.skip",
+                            });
                         }
                     } catch (error) {
-                        console.error("Error creating initial roles:", error);
+                        logger.error("Error creating initial roles", {
+                            event: "roles.seed.error",
+                            error: error.message,
+                        });
                     }
                 },
             },

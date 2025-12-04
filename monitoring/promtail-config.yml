@@ -1,0 +1,33 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: backend-files
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: backend-files
+          service: kortowo-backend
+          __path__: /var/log/kortowo/backend/application-*.log
+    pipeline_stages:
+      - logfmt:
+          mapping:
+            level: level
+            event: event
+            service: service
+            statusCode: statusCode
+            method: method
+            msg: msg
+      - labels:
+          level:
+          event:
+          service:
+          statusCode:
+          method:

@@ -3,6 +3,7 @@ import logger from "../config/logger.js";
 import { OFFER_STATUS } from "../constants/index.js";
 import { NotFoundError, ForbiddenError, ValidationError } from "../utils/errors.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { buildLogContext } from "../utils/logContext.js";
 
 const { Offer, User } = db;
 
@@ -71,7 +72,13 @@ export const createOffer = asyncHandler(async (req, res) => {
 
     logger.info(
         `User "${req.user.username}" created offer`,
-        { offerId: offer.id, title: offer.title }
+        buildLogContext(req, {
+            event: "offer.create",
+            offerId: offer.id,
+            title: offer.title,
+            userId: req.user.id,
+            username: req.user.username,
+        })
     );
 
     res.status(201).json(offer);
@@ -92,7 +99,13 @@ export const deleteOffer = asyncHandler(async (req, res) => {
 
     logger.info(
         `User "${req.user.username}" deleted offer`,
-        { offerId: offer.id, title: offer.title }
+        buildLogContext(req, {
+            event: "offer.delete",
+            offerId: offer.id,
+            title: offer.title,
+            userId: req.user.id,
+            username: req.user.username,
+        })
     );
 
     res.status(200).json({ message: "Offer deleted successfully" });
@@ -113,7 +126,13 @@ export const updateOffer = asyncHandler(async (req, res) => {
 
     logger.info(
         `User "${req.user.username}" updated offer`,
-        { offerId: offer.id, title: offer.title }
+        buildLogContext(req, {
+            event: "offer.update",
+            offerId: offer.id,
+            title: offer.title,
+            userId: req.user.id,
+            username: req.user.username,
+        })
     );
 
     res.status(200).json(updatedOffer);

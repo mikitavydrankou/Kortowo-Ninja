@@ -45,7 +45,7 @@ describe('Auth Controller', () => {
       expect(res.cookie).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ id: 11, username: 'alice', role: 'user', link: 'link' }));
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('alice'));
+      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('alice'), expect.any(Object));
       expect(next).not.toHaveBeenCalled();
     });
   });
@@ -67,7 +67,7 @@ describe('Auth Controller', () => {
       expect(res.cookie).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ id: 7, username: 'bob', role: 'user', link: 'some-link' }));
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('bob'));
+      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('bob'), expect.any(Object));
       expect(next).not.toHaveBeenCalled();
     });
 
