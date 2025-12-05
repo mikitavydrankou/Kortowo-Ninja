@@ -1,7 +1,4 @@
-// This file mocks the database interactions for testing purposes.
-// It contains mock implementations for database functions like findOne and create.
-
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 export const createDbMock = () => {
   const mockUser = {
@@ -11,12 +8,12 @@ export const createDbMock = () => {
     update: jest.fn(),
     destroy: jest.fn(),
     findAll: jest.fn(),
-    count: jest.fn()
+    count: jest.fn(),
   };
 
   const mockRole = {
     findOne: jest.fn(),
-    findAll: jest.fn()
+    findAll: jest.fn(),
   };
 
   const mockOffer = {
@@ -24,7 +21,7 @@ export const createDbMock = () => {
     create: jest.fn(),
     findByPk: jest.fn(),
     count: jest.fn(),
-    destroy: jest.fn()
+    destroy: jest.fn(),
   };
 
   const sequelizeFn = jest.fn((name) => `fn(${name})`);
@@ -39,23 +36,23 @@ export const createDbMock = () => {
       transaction: jest.fn(),
       fn: sequelizeFn,
       col: sequelizeCol,
-      literal: sequelizeLiteral
+      literal: sequelizeLiteral,
     },
     Sequelize: {
       Op: {
-        gt: Symbol('gt'),
-        lt: Symbol('lt'),
-        gte: Symbol('gte')
-      }
+        gt: Symbol("gt"),
+        lt: Symbol("lt"),
+        gte: Symbol("gte"),
+      },
     },
-    // Экспортируем для удобного доступа в тестах
+
     _mockUser: mockUser,
     _mockRole: mockRole,
     _mockOffer: mockOffer,
     _sequelizeFns: {
       fn: sequelizeFn,
       col: sequelizeCol,
-      literal: sequelizeLiteral
-    }
+      literal: sequelizeLiteral,
+    },
   };
 };
