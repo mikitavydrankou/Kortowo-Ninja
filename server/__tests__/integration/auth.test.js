@@ -28,7 +28,8 @@ describe('Auth Integration', () => {
             body: {
                 username: 'integration_user',
                 password: 'StrongPassword123!',
-                link: 'https://facebook.com'
+                //WRONG LINK - remove /integrationuser
+                link: 'https://facebook.com/integrationuser'
             }
         });
         const res = createMockResponse();

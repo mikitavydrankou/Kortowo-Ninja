@@ -112,7 +112,7 @@ describe("Auth Controller", () => {
       expect(res.cookie).toHaveBeenCalled();
 
       // CHANGED TO 400 FROM 200
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 7,
