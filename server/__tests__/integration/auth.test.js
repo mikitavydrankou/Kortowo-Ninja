@@ -28,7 +28,7 @@ describe('Auth Integration', () => {
             body: {
                 username: 'integration_user',
                 password: 'StrongPassword123!',
-                link: 'https://facebook.com/integrationuser'
+                link: 'https://facebook.com'
             }
         });
         const res = createMockResponse();
