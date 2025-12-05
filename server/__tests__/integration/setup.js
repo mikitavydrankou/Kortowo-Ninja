@@ -3,8 +3,6 @@ import { GenericContainer, Wait } from 'testcontainers';
 let container;
 
 export const startContainer = async () => {
-    process.env.TESTCONTAINERS_RYUK_DISABLED = 'true';
-
     container = await new GenericContainer('mysql:8.0')
         .withEnvironment({
             MYSQL_ROOT_PASSWORD: 'test_root_password',

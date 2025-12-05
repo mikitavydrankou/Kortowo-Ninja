@@ -81,6 +81,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Pull MySQL image
+        run: docker pull mysql:8.0
+
       - name: Run integration tests
         run: npm test -- __tests__/integration --verbose --runInBand --forceExit
 
