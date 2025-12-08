@@ -68,6 +68,7 @@ export const signup = asyncHandler(async (req, res) => {
         username: user.username,
         role: role.name,
         link: user.link,
+        createdAt: user.createdAt,
     });
 });
 
@@ -118,6 +119,7 @@ export const signin = asyncHandler(async (req, res) => {
         username: user.username,
         role: user.role?.name,
         link: user.link,
+        createdAt: user.createdAt,
     });
 });
 

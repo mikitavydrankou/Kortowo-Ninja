@@ -22,3 +22,12 @@ export const getOfferCount = async () => {
         return null;
     }
 };
+
+export const getTopUsers = async () => {
+    try {
+        const res = await api.get("/leaderboard");
+        return res.data.data;
+    } catch (error) {
+        return null;
+    }
+};

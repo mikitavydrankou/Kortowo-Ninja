@@ -12,6 +12,7 @@ export const useAuthStore = create(
             signin: async (username, password) => {
                 set({ isLoading: true, error: null });
                 try {
+                    localStorage.removeItem("auth-storage");
                     const { data } = await signin(username, password);
                     set({ user: data, isLoading: false, error: null });
                 } catch (error) {
@@ -47,7 +48,6 @@ export const useAuthStore = create(
                 } catch (error) {
                     console.error("Logout error:", error);
                 }
-                // Server clears the httpOnly cookie; remove client state and persisted storage.
                 set({ user: null, error: null });
                 localStorage.removeItem("auth-storage");
             },
@@ -59,9 +59,11 @@ export const useAuthStore = create(
                         set({ user: response, error: null });
                     } else {
                         set({ user: null, error: null });
+                        localStorage.removeItem("auth-storage");
                     }
                 } catch {
                     set({ user: null });
+                    localStorage.removeItem("auth-storage");
                 }
             },
 
@@ -73,10 +75,11 @@ export const useAuthStore = create(
                     user && (user.role === "admin" || user.role === "moderator")
                 );
             },
-        }))
-    ),
-    {
-        name: "auth-storage",
-        getStorage: () => localStorage,
-    }
+        })),
+        {
+            name: "auth-storage",
+            partialize: (state) => ({ user: state.user }),
+        }
+    )
 );
+

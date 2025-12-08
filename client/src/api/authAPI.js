@@ -32,3 +32,12 @@ export const signout = async () => {
         return null;
     }
 };
+
+export const deleteAccount = async () => {
+    const api = axios.create({
+        baseURL: `${import.meta.env.VITE_API_URL}`,
+        withCredentials: true,
+    });
+    const res = await api.delete("/users/me");
+    return res;
+};

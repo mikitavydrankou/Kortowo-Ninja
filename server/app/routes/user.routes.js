@@ -9,6 +9,7 @@ import {
     getUserActiveOffers,
     getUserArchivedOffers,
     deleteUser,
+    deleteSelf,
     getUserById,
     updateUserRole,
     updateUser,
@@ -30,6 +31,10 @@ const routes = function (app) {
         getUserArchivedOffers
     );
     app.get("/api/leaderboard", leaderboard);
+
+    // Self-delete должен быть ПЕРЕД :id роутами
+    app.delete("/api/users/me", [authJwt.verifyToken], deleteSelf);
+
     app.get("/api/users/:id", [authJwt.verifyToken], getUserById);
     app.delete(
         "/api/users/:id",

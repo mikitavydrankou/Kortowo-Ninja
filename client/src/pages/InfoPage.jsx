@@ -11,6 +11,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    TextField,
 } from "@mui/material";
 import { useAuthStore } from "../store/authStore";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -20,16 +21,23 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import ContactSupportIcon from "@mui/icons-material/ContactSupport";
 import LinkIcon from "@mui/icons-material/Link";
 import GavelIcon from "@mui/icons-material/Gavel";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { getUserCount, getOfferCount } from "../api/featureAPI.js";
+import { deleteAccount } from "../api/authAPI.js";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
 const InfoPage = () => {
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
+    const navigate = useNavigate();
     const [userCount, setUserCount] = useState(null);
     const [offerCount, setOfferCount] = useState(null);
     const [termsOpen, setTermsOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState("");
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const fetchCounts = async () => {
@@ -48,6 +56,19 @@ const InfoPage = () => {
         fetchCounts();
     }, []);
 
+    const handleDeleteAccount = async () => {
+        if (deleteConfirm !== "USUŃ") return;
+        setDeleting(true);
+        try {
+            await deleteAccount();
+            logout();
+            navigate("/");
+        } catch (err) {
+            console.error("Failed to delete account", err);
+        }
+        setDeleting(false);
+    };
+
     const sectionStyle = {
         p: 4,
         mb: 4,
@@ -60,14 +81,7 @@ const InfoPage = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 6 }}>
-            {/* Заголовок с иконкой */}
             <Box textAlign="center" mb={6}>
-                <Chip
-                    label="Beta"
-                    color="primary"
-                    size="small"
-                    sx={{ mb: 2 }}
-                />
                 <Typography
                     variant="h3"
                     gutterBottom
@@ -80,7 +94,6 @@ const InfoPage = () => {
                         gap: 2,
                     }}
                 >
-                    <GroupsIcon fontSize="large" />
                     Witamy w Ninja!
                 </Typography>
                 <Typography variant="h6" color="text.secondary">
@@ -88,77 +101,60 @@ const InfoPage = () => {
                 </Typography>
             </Box>
 
-            {/* Блок пользователя */}
             {user && (
                 <Box sx={sectionStyle}>
-                    <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-                        👋 Twoje konto
-                    </Typography>
-
-                    <Stack spacing={2}>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary">
-                                Nazwa użytkownika
-                            </Typography>
-                            <Typography variant="body1" fontWeight={500}>
-                                {user.username}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        {/* Avatar */}
+                        <Box
+                            sx={{
+                                width: 56,
+                                height: 56,
+                                borderRadius: "50%",
+                                bgcolor: "primary.main",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                            }}
+                        >
+                            <Typography variant="h5" sx={{ color: "white", fontWeight: 600 }}>
+                                {user.username?.charAt(0).toUpperCase()}
                             </Typography>
                         </Box>
 
-                        {user.link && (
-                            <Box>
+                        {/* Info */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="h6" fontWeight={600}>
+                                {user.username}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {user.createdAt
+                                    ? `Dołączył ${new Date(user.createdAt).toLocaleDateString("pl-PL")}`
+                                    : "Użytkownik"}
+                            </Typography>
+                            {user.link && (
                                 <Typography
+                                    component="a"
+                                    href={user.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     variant="body2"
-                                    color="text.secondary"
+                                    sx={{
+                                        color: "primary.main",
+                                        textDecoration: "none",
+                                        display: "block",
+                                        mt: 0.5,
+                                        "&:hover": { textDecoration: "underline" },
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                    }}
                                 >
-                                    Link do profilu
+                                    {user.link.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]}
                                 </Typography>
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                >
-                                    <LinkIcon fontSize="small" color="action" />
-                                    <Typography
-                                        variant="body1"
-                                        sx={{
-                                            wordBreak: "break-all",
-                                            overflowWrap: "break-word",
-                                        }}
-                                    >
-                                        {user.link}
-                                    </Typography>
-                                </Stack>
-                                <Stack
-                                    spacing={2}
-                                    direction="row"
-                                    sx={{ mt: 2 }}
-                                >
-                                    <Button
-                                        variant="contained"
-                                        href={user.link}
-                                        target="_blank"
-                                        startIcon={<LinkIcon />}
-                                        sx={{ borderRadius: 3 }}
-                                    >
-                                        Sprawdź link
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() =>
-                                            navigator.clipboard.writeText(
-                                                user.link
-                                            )
-                                        }
-                                        startIcon={<ContentCopyIcon />} // Исправлено
-                                        sx={{ borderRadius: 3 }}
-                                    >
-                                        Kopiuj
-                                    </Button>
-                                </Stack>
-                            </Box>
-                        )}
-                    </Stack>
+                            )}
+                        </Box>
+                    </Box>
                 </Box>
             )}
 
@@ -436,11 +432,77 @@ const InfoPage = () => {
                 </DialogActions>
             </Dialog>
 
+            {/* Диалог удаления аккаунта */}
+            <Dialog
+                open={deleteOpen}
+                onClose={() => {
+                    setDeleteOpen(false);
+                    setDeleteConfirm("");
+                }}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle sx={{ color: "error.main" }}>
+                    <DeleteForeverIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+                    Usuń konto
+                </DialogTitle>
+                <DialogContent>
+                    <Typography paragraph>
+                        Ta operacja jest <strong>nieodwracalna</strong>. Wszystkie Twoje
+                        oferty zostaną usunięte.
+                    </Typography>
+                    <Typography paragraph>
+                        Aby potwierdzić, wpisz <strong>USUŃ</strong> poniżej:
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        value={deleteConfirm}
+                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                        placeholder="USUŃ"
+                        variant="outlined"
+                        size="small"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => {
+                            setDeleteOpen(false);
+                            setDeleteConfirm("");
+                        }}
+                    >
+                        Anuluj
+                    </Button>
+                    <Button
+                        onClick={handleDeleteAccount}
+                        variant="contained"
+                        color="error"
+                        disabled={deleteConfirm !== "USUŃ" || deleting}
+                    >
+                        {deleting ? <CircularProgress size={20} /> : "Usuń konto"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {user && (
+                <Box textAlign="center" sx={{ mt: 4 }}>
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteForeverIcon />}
+                        onClick={() => setDeleteOpen(true)}
+                        sx={{ borderRadius: 3, opacity: 0.7 }}
+                    >
+                        Usuń konto
+                    </Button>
+                </Box>
+            )}
+
             <Typography
                 variant="body2"
                 color="text.secondary"
                 textAlign="center"
-                sx={{ mt: 6, opacity: 0.8 }}
+                sx={{ mt: 4, opacity: 0.8 }}
             >
                 © {new Date().getFullYear()} Ninja | Projekt studencki WMiI
             </Typography>

@@ -25,8 +25,8 @@ export const moderatorBoard = (req, res) => {
 
 export const leaderboard = async (req, res) => {
     try {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 20);
+        const rankingStartDate = new Date();
+        rankingStartDate.setDate(rankingStartDate.getDate() - 20);
 
         const topUsers = await db.Offer.findAll({
             attributes: [
@@ -40,16 +40,17 @@ export const leaderboard = async (req, res) => {
             where: {
                 status: ["active", "archived"],
                 createdAt: {
-                    [db.Sequelize.Op.gte]: oneWeekAgo,
+                    [db.Sequelize.Op.gte]: rankingStartDate,
                 },
             },
-            group: ["userId"],
+            group: ["offers.userId", "user.id", "user.username", "user.link"],
             order: [[db.sequelize.literal("offerCount"), "DESC"]],
             limit: 3,
             include: [
                 {
                     model: db.User,
-                    attributes: ["id", "username"],
+                    as: "user",
+                    attributes: ["id", "username", "link"],
                 },
             ],
         });
@@ -222,6 +223,32 @@ export const deleteUser = async (req, res) => {
             })
         );
         res.status(500).json({ message: "Failed to delete user" });
+    }
+};
+
+export const deleteSelf = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const user = await db.User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        await db.Offer.destroy({ where: { userId } });
+        await user.destroy();
+
+        res.clearCookie("accessToken");
+        res.status(200).json({ message: "Account deleted successfully" });
+    } catch (err) {
+        logger.error(
+            "Error deleting own account",
+            buildLogContext(req, {
+                event: "users.deleteSelf.error",
+                error: err.message,
+            })
+        );
+        res.status(500).json({ message: "Failed to delete account" });
     }
 };
 

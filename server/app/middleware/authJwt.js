@@ -26,6 +26,7 @@ const verifyToken = async (req, res, next) => {
             username: user.username,
             link: user.link,
             role: decoded.role,
+            createdAt: user.createdAt,
         };
 
         next();
@@ -52,11 +53,12 @@ const optionalVerifyToken = async (req, res, next) => {
 
         req.user = user
             ? {
-                  id: user.id,
-                  username: user.username,
-                  link: user.link,
-                  role: decoded.role,
-              }
+                id: user.id,
+                username: user.username,
+                link: user.link,
+                role: decoded.role,
+                createdAt: user.createdAt,
+            }
             : null;
     } catch (err) {
         req.user = null;
