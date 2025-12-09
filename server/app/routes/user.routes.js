@@ -17,7 +17,6 @@ import {
 } from "../controllers/user.controller.js";
 
 const routes = function (app) {
-    // User routes
     app.put("/api/users/:id/role", [authJwt.verifyToken], updateUserRole);
     app.get("/api/users", [authJwt.verifyToken], users);
     app.get(
@@ -32,7 +31,6 @@ const routes = function (app) {
     );
     app.get("/api/leaderboard", leaderboard);
 
-    // Self-delete должен быть ПЕРЕД :id роутами
     app.delete("/api/users/me", [authJwt.verifyToken], deleteSelf);
 
     app.get("/api/users/:id", [authJwt.verifyToken], getUserById);

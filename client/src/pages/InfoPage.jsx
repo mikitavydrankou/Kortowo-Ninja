@@ -104,7 +104,6 @@ const InfoPage = () => {
             {user && (
                 <Box sx={sectionStyle}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        {/* Avatar */}
                         <Box
                             sx={{
                                 width: 56,
@@ -122,7 +121,6 @@ const InfoPage = () => {
                             </Typography>
                         </Box>
 
-                        {/* Info */}
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography variant="h6" fontWeight={600}>
                                 {user.username}
@@ -158,7 +156,6 @@ const InfoPage = () => {
                 </Box>
             )}
 
-            {/* Секция о projekcie */}
             <Box sx={sectionStyle}>
                 <Typography
                     variant="h5"
@@ -228,7 +225,6 @@ const InfoPage = () => {
                 </Box>
             </Box>
 
-            {/* Instrukcja korzystania */}
             <Box sx={sectionStyle}>
                 <Box
                     sx={{
@@ -279,7 +275,6 @@ const InfoPage = () => {
                 </Box>
             </Box>
 
-            {/* Kontakt */}
             <Box sx={sectionStyle}>
                 <Typography
                     variant="h5"
@@ -341,7 +336,6 @@ const InfoPage = () => {
                 </Stack>
             </Box>
 
-            {/* Модальное окно с регуламином */}
             <Dialog
                 open={termsOpen}
                 onClose={() => setTermsOpen(false)}
@@ -432,7 +426,6 @@ const InfoPage = () => {
                 </DialogActions>
             </Dialog>
 
-            {/* Диалог удаления аккаунта */}
             <Dialog
                 open={deleteOpen}
                 onClose={() => {

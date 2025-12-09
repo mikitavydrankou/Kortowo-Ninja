@@ -1,4 +1,3 @@
-# Reusable CI image with Playwright, Node 20 and MySQL Server
 FROM mcr.microsoft.com/playwright:v1.57.0-jammy
 
 USER root

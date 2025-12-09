@@ -49,7 +49,6 @@ const TopNavbar = () => {
                     )}
                 </Box>
 
-                {/* Центральная часть - лого */}
                 <Box
                     sx={{
                         flexGrow: 1,
@@ -72,7 +71,6 @@ const TopNavbar = () => {
                     />
                 </Box>
 
-                {/* Правая часть - для будущих элементов */}
                 <Box sx={{ width: 120 }}></Box>
             </Toolbar>
         </AppBar>

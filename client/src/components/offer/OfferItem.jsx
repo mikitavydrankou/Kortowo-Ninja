@@ -1,6 +1,5 @@
 import { Card, CardContent, Typography, Button, Box } from "@mui/material";
 import { Link } from "react-router-dom";
-// import { useAuthStore } from "../../store/authStore";
 
 const OfferItem = ({ offer, currentTime }) => {
     const calculateTimeLeft = () => {
@@ -15,7 +14,6 @@ const OfferItem = ({ offer, currentTime }) => {
         return `${hours}g ${minutes.toString().padStart(2, "0")}m`;
     };
 
-    // const user = useAuthStore((s) => s.user);
 
     return (
         <Box

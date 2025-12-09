@@ -140,8 +140,6 @@ const OfferForm = () => {
                         ))}
                     </Select>
                 </Box>
-
-                {/* Title Group */}
                 <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                 >
@@ -169,7 +167,6 @@ const OfferForm = () => {
                     />
                 </Box>
 
-                {/* Description Group */}
                 <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                 >
@@ -199,7 +196,6 @@ const OfferForm = () => {
                     />
                 </Box>
 
-                {/* TTL Hours Group */}
                 <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                 >
@@ -231,7 +227,6 @@ const OfferForm = () => {
                     />
                 </Box>
 
-                {/* Counter Offer Group */}
                 <Box
                     sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
                 >

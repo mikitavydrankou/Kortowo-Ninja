@@ -127,8 +127,8 @@ const SignupForm = () => {
                                     component="span"
                                     variant="body2"
                                     onClick={(e) => {
-                                        e.preventDefault(); // <--- важно!
-                                        e.stopPropagation(); // <--- тоже желательно
+                                        e.preventDefault();
+                                        e.stopPropagation();
                                         setOpenTerms(true);
                                     }}
                                     sx={{
