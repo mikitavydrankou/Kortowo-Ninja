@@ -110,7 +110,3 @@ docker-compose up -d --build
 ```
 
 *   **Application**: `https://<configured-domain>`
-
-## License
-
-This project is proprietary software developed for the UWM Kortowo community.
