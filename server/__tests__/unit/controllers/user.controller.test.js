@@ -57,7 +57,7 @@ describe('User Controller', () => {
       expect(mockOffer.findAll).toHaveBeenCalledWith(expect.objectContaining({
         attributes: expect.any(Array),
         where: expect.objectContaining({ status: ['active', 'archived'] }),
-        group: ['userId'],
+        group: expect.arrayContaining(['offers.userId']),
         order: expect.any(Array),
         limit: 3
       }));
