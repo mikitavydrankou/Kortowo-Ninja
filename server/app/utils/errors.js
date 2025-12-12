@@ -1,32 +1,32 @@
 export class AppError extends Error {
-    constructor(message, statusCode = 500) {
-        super(message);
-        this.statusCode = statusCode;
-        this.isOperational = true;
-        Error.captureStackTrace(this, this.constructor);
-    }
+  constructor(message, statusCode = 500) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
-
+// test
 export class ValidationError extends AppError {
-    constructor(message) {
-        super(message, 400);
-    }
+  constructor(message) {
+    super(message, 400);
+  }
 }
 
 export class NotFoundError extends AppError {
-    constructor(resource = "Resource") {
-        super(`${resource} not found`, 404);
-    }
+  constructor(resource = "Resource") {
+    super(`${resource} not found`, 404);
+  }
 }
 
 export class UnauthorizedError extends AppError {
-    constructor(message = "Unauthorized") {
-        super(message, 401);
-    }
+  constructor(message = "Unauthorized") {
+    super(message, 401);
+  }
 }
 
 export class ForbiddenError extends AppError {
-    constructor(message = "Permission denied") {
-        super(message, 403);
-    }
+  constructor(message = "Permission denied") {
+    super(message, 403);
+  }
 }
