@@ -7,7 +7,7 @@ Kortowo Ninja is a web-based resource exchange platform engineered for the Unive
 This repository utilizes a monorepo structure. Detailed documentation for the application layers can be found in their respective directories:
 
 *   **[Client Documentation](./client/README.md)** - Frontend architecture, UI components, state management (Zustand/React Query), and build processes.
-*   **[Server Documentation](./server/README.md)** - Backend API specification, authentication flows, database schema (Sequelize), and service logic.
+*   **[Server Documentation](./server/README.MD)** - Backend API specification, authentication flows, database schema (Sequelize), and service logic.
 
 ## System Architecture
 
