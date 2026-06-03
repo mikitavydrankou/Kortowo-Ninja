@@ -13,13 +13,13 @@ The server follows a layered Model-View-Controller (MVC) architecture, separatin
 *   **Database**: MySQL
 *   **ORM**: Sequelize
 *   **Authentication**: JSON Web Tokens (JWT) using `jsonwebtoken`
-*   **Security**: `bcrypt` for password hashing, `helmet` (implied by best practices), and custom middleware
+*   **Security**: `bcrypt` for password hashing, HTTP-only cookies, and custom auth/role middleware
 *   **Scheduling**: `node-schedule` for background tasks
 *   **Logging**: `winston` for structured logging
 
 ## Prerequisites
 
-*   Node.js version 23.x
+*   Node.js version 20.x
 *   MySQL Database instance
 *   npm (Node Package Manager)
 
@@ -69,17 +69,26 @@ Offers have a sophisticated lifecycle management system:
 *   `POST /api/auth/signout` - Clear session cookie.
 
 ### Users
-*   `GET /api/users` - List all users (Admin/Moderator only).
+*   `GET /api/users` - List all users (auth required).
 *   `GET /api/users/:id` - Get specific user details.
 *   `PUT /api/users/:id` - Update profile.
+*   `PUT /api/users/:id/role` - Change a user's role.
 *   `DELETE /api/users/:id` - Delete user (Admin only).
+*   `DELETE /api/users/me` - Delete own account.
+*   `GET /api/auth/me` - Current authenticated user (or `null`).
 *   `GET /api/leaderboard` - Public endpoint for top active users.
+*   `GET /api/count` - Public total user count.
 
 ### Offers
-*   `POST /api/offers` - Create a new exchange offer.
-*   `GET /api/offers` - List active offers.
-*   `GET /api/users/:userId/offers/active` - List active offers for a specific user.
-*   `GET /api/users/:userId/offers/archived` - List history of offers for a specific user.
+*   `POST /api/offer` - Create a new exchange offer.
+*   `GET /api/offer/active` - List active offers (public).
+*   `GET /api/offer/archived` - List archived offers (auth required).
+*   `GET /api/offer/count` - Public total offer count.
+*   `GET /api/offer/:id` - Fetch a single offer.
+*   `PUT /api/offer/:id` - Update an offer.
+*   `DELETE /api/offer/:id` - Delete an offer.
+*   `GET /api/users/:userId/offers/active` - Active offers for a specific user.
+*   `GET /api/users/:userId/offers/archived` - Archived offers for a specific user.
 
 ## Error Handling
 
